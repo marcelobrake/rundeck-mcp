@@ -1,0 +1,23 @@
+{
+  "_comment": "Cole este bloco dentro do seu claude_desktop_config.json, na chave 'mcpServers'",
+  "mcpServers": {
+    "rundeck": {
+      "command": "/home/marcelo/mcp-servers/rundeck-mcp/.venv/bin/python",
+      "args": ["-m", "rundeck_mcp.server"],
+      "cwd": "/caminho/para/rundeck-mcp",
+      "env": {
+        "FASTMCP_SHOW_SERVER_BANNER": "false",
+        "RUNDECK_URL": "http://rundeck.sua-empresa.com:4440",
+        "RUNDECK_TOKEN": "seu_api_token_aqui",
+        "RUNDECK_API_VERSION": "57",
+        "RUNDECK_EXECUTION_ENABLED": "true",
+        "RUNDECK_VERIFY_SSL": "true",
+        "RUNDECK_ALLOWED_PROJECTS": "",
+        "RUNDECK_CACHE_TTL_SECONDS": "30",
+        "RUNDECK_LOG_OUTPUT_MAX_LINES": "500",
+        "RUNDECK_LOG_LEVEL": "INFO",
+        "RUNDECK_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
