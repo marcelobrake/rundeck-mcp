@@ -457,3 +457,7 @@ pytest tests/ -v --cov=rundeck_mcp --cov-report=term-missing
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | Endpoint OTLP para exportar traces e métricas |
+
+## Contributing
+
+Contribuidores são bem-vindos! Por favor, siga as regras de desenvolvimento e o Sensitive Access Policy descritos em AGENTS.md para garantir que o projeto continue seguro e confiável.
