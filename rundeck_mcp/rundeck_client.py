@@ -145,12 +145,35 @@ class RundeckClient:
                 self._settings.api_version,
             )
         except Exception as exc:
-            logger.error("❌ Falha ao conectar ao Rundeck: %s", exc)
-            raise
+            contextualized = self._contextualize_startup_error(exc)
+            logger.warning(
+                "⚠️ Não foi possível validar conexão ao Rundeck no startup: %s. "
+                "O servidor continuará operando — as tools podem retornar erros até que o "
+                "Rundeck esteja acessível (VPN ativa?).",
+                contextualized,
+            )
 
     async def stop(self) -> None:
         if self._client:
             await self._client.aclose()
+
+    def _contextualize_startup_error(self, exc: Exception) -> Exception:
+        if isinstance(exc, PermissionError) and "/system/info" in str(exc):
+            return PermissionError(
+                f"{exc} Se esse Rundeck só é acessível corretamente pela VPN "
+                f"'{self._settings.vpn_name}', confirme que ela está ativa antes de "
+                "validar ACLs; fora da rede interna alguns proxies retornam 403 "
+                "nesse endpoint."
+            )
+
+        if isinstance(exc, RuntimeError) and "Rundeck indisponível" in str(exc):
+            return RuntimeError(
+                f"{exc} Se o acesso ao Rundeck depende da VPN "
+                f"'{self._settings.vpn_name}', confirme a conectividade antes de "
+                "iniciar o MCP."
+            )
+
+        return exc
 
     # -----------------------------------------------------------------------
     # HTTP helpers

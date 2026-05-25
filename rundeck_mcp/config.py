@@ -57,6 +57,16 @@ class Settings(BaseSettings):
     log_dir: str = Field(default="logs")
     log_level: str = Field(default="INFO")
 
+    # ---- VPN ------------------------------------------------------------
+    vpn_name: str = Field(
+        default="Conexia (Only AWS)",
+        description="Nome da conexão VPN no nmcli",
+    )
+    vpn_auto_connect: bool = Field(
+        default=True,
+        description="Conectar à VPN automaticamente se não estiver ativa",
+    )
+
     # ---- Transport MCP --------------------------------------------------
     transport: Literal["stdio", "sse"] = Field(default="stdio")
 

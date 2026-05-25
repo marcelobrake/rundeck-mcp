@@ -81,6 +81,8 @@ ou `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
         "RUNDECK_API_VERSION": "57",
         "RUNDECK_EXECUTION_ENABLED": "true",
         "RUNDECK_VERIFY_SSL": "true",
+        "RUNDECK_VPN_NAME": "Conexia (Only AWS)",
+        "RUNDECK_VPN_AUTO_CONNECT": "false",
         "RUNDECK_TRANSPORT": "stdio"
       }
     }
@@ -89,6 +91,20 @@ ou `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 ```
 
 Reinicie o Claude Desktop após salvar.
+
+### VPN
+
+Se o Rundeck só for acessível pela rede interna, o servidor pode validar uma VPN do
+NetworkManager antes de abrir o cliente HTTP.
+
+- `RUNDECK_VPN_NAME`: nome exato da conexão mostrada pelo `nmcli connection show`
+- `RUNDECK_VPN_AUTO_CONNECT=true`: tenta executar `nmcli connection up <vpn>`
+- `RUNDECK_VPN_AUTO_CONNECT=false`: exige que a VPN já esteja conectada manualmente
+
+Em clientes desktop como Claude Desktop, a tentativa automática pode falhar com
+`No valid secrets` quando a conexão depende de senha/certificado não disponível no
+keyring da sessão. Nessa situação, conecte a VPN manualmente antes de abrir o MCP
+ou salve os segredos no NetworkManager.
 
 ---
 

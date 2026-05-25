@@ -11,11 +11,32 @@ elif [ -f ".venv/Scripts/activate" ]; then
     source .venv/Scripts/activate
 fi
 
+prepend_path_if_dir() {
+    local dir_path="$1"
+    if [ -d "$dir_path" ] && [[ ":$PATH:" != *":$dir_path:"* ]]; then
+        PATH="$dir_path:$PATH"
+    fi
+}
+
+# Git hooks can run with a reduced PATH (especially when triggered from GUI clients).
+# Add common package manager/bin locations so required security tools are discoverable.
+prepend_path_if_dir "$HOME/.local/bin"
+prepend_path_if_dir "$HOME/.cargo/bin"
+prepend_path_if_dir "$HOME/.nvm/versions/node/current/bin"
+prepend_path_if_dir "/home/linuxbrew/.linuxbrew/bin"
+prepend_path_if_dir "/home/linuxbrew/.linuxbrew/sbin"
+prepend_path_if_dir "/opt/homebrew/bin"
+prepend_path_if_dir "/opt/homebrew/sbin"
+prepend_path_if_dir "/usr/local/bin"
+prepend_path_if_dir "/usr/local/sbin"
+export PATH
+
 require_tool() {
     local tool_name="$1"
     local install_hint="$2"
     if ! command -v "$tool_name" >/dev/null 2>&1; then
         echo "ERROR: Missing required tool '$tool_name'. $install_hint" >&2
+        echo "Current PATH in hook: $PATH" >&2
         exit 1
     fi
 }

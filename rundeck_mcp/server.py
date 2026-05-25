@@ -9,6 +9,7 @@ from .logging_config import setup_logging
 from .rundeck_client import RundeckClient
 from .telemetry import init_telemetry
 from .tools import register_all_tools
+from .vpn import ensure_vpn_connected
 
 logger = logging.getLogger("rundeck_mcp")
 
@@ -26,6 +27,7 @@ async def lifespan(app: FastMCP):
             "execution_enabled": cfg.execution_enabled,
         },
     )
+    ensure_vpn_connected(cfg.vpn_name, cfg.vpn_auto_connect)
     client = RundeckClient(cfg)
     await client.start()
     try:

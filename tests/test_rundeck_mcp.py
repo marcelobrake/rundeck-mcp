@@ -4,6 +4,7 @@ Usa respx para mock do httpx.
 """
 
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -263,6 +264,22 @@ class TestRundeckClientHTTP:
         await client.stop()
 
     @respx.mock
+    async def test_start_403_mentions_vpn_context(self):
+        from rundeck_mcp.rundeck_client import RundeckClient
+
+        s = make_settings(vpn_name="VPN Corp")
+        respx.get(f"{s.base_url}/system/info").mock(
+            return_value=httpx.Response(403, json={"error": "forbidden"})
+        )
+        client = RundeckClient(s)
+        await client.start()  # startup deve tolerar falha de validação inicial
+        contextualized = client._contextualize_startup_error(
+            PermissionError("Sem permissão para GET /system/info. Verifique as ACLs.")
+        )
+        assert "VPN Corp" in str(contextualized)
+        await client.stop()
+
+    @respx.mock
     async def test_execution_disabled_blocks_run(self):
         from rundeck_mcp.rundeck_client import RundeckClient
         s = make_settings(execution_enabled="false")
@@ -323,3 +340,37 @@ class TestRundeckClientHTTP:
         with pytest.raises(RuntimeError, match="indisponível"):
             await client.get("/projects")
         await client.stop()
+
+
+# ---------------------------------------------------------------------------
+# VPN helpers
+# ---------------------------------------------------------------------------
+class TestVPN:
+    def test_is_vpn_active_matches_exact_name(self, monkeypatch):
+        from rundeck_mcp.vpn import is_vpn_active
+
+        def fake_run(*args, **kwargs):
+            return subprocess.CompletedProcess(
+                args=["nmcli"],
+                returncode=0,
+                stdout="Minha VPN:vpn:tun0\nOutra:vpn:tun1\n",
+                stderr="",
+            )
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert is_vpn_active("Minha VPN") is True
+        assert is_vpn_active("VPN") is False
+
+    def test_connect_vpn_wraps_no_valid_secrets(self, monkeypatch):
+        from rundeck_mcp.vpn import VPNConnectionError, connect_vpn
+
+        def fake_run(*args, **kwargs):
+            raise subprocess.CalledProcessError(
+                4,
+                ["nmcli", "connection", "up", "Minha VPN"],
+                stderr="Error: Connection activation failed: No valid secrets",
+            )
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        with pytest.raises(VPNConnectionError, match="segredos válidos"):
+            connect_vpn("Minha VPN")
